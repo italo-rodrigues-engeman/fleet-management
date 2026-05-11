@@ -1,0 +1,20 @@
+🟢 *ENGEMAN INFORMA* 🟢
+
+Olá, ${name}
+
+Seja muito bem-vindo ao *Kogni*! Para ativar sua conta, utilize o código abaixo:
+
+*${code}*
+
+Acesse: https://app.kogni.com.br
+
+Este código expira em ${expirationTime}.
+
+Se você ou seu gestor não solicitou este código, apenas ignore essa mensagem.
+
+
+---
+KOGNI - Cadastro de Usuários
+
+⚠️ *OBS.:* Não é necessário responder a esta mensagem! ##ENGEMAN##
+

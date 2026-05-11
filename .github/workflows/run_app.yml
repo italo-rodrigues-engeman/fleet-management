@@ -1,0 +1,159 @@
+name: Kogni CI/CD
+
+on:
+  push:
+    branches: [ main, prod ]
+  pull_request:
+    branches: [ main, prod ]
+
+concurrency:
+  group: kogni-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ------------------------------
+  # JOB 1: Testes + Cobertura (PRs)
+  # ------------------------------
+  tests:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21 (Maven)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Run tests with coverage (Maven)
+        run: |
+          mvn -B -ntp -DskipITs verify jacoco:report
+
+      - name: Add coverage to PR (JaCoCo)
+        uses: madrapps/jacoco-report@v1.7.2
+        with:
+          paths: |
+            ${{ github.workspace }}/**/target/site/jacoco/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 40
+          min-coverage-changed-files: 60
+
+  # ------------------------------
+  # JOB 2: Deploy Main (Linux via Docker)
+  # ------------------------------
+  deploy_main:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy Kogni Backend on Linux
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            set -e
+            cd kogni/indux
+            git remote set-url origin https://x-access-token:${{ secrets.DEPLOY_KEY }}@github.com/DevEngeman/indux.git
+            git fetch --all
+            git checkout main
+            git pull origin main
+
+            docker rm -f kogni-backend || true
+            docker rmi -f kogni-backend-img || true
+            docker builder prune -af || true
+            docker image prune -af --filter "dangling=true" || true
+            docker volume prune -f || true
+
+            docker build --no-cache --force-rm -t kogni-backend-img .
+            docker run -d \
+            --name kogni-backend \
+            -e MAIL_EMAIL='${{ secrets.MAIL_EMAIL }}' \
+            -e MAIL_PASSWORD='${{ secrets.MAIL_PASSWORD }}' \
+            -e SERVER_PORT=3505 \
+            -e EVOLUTION_INSTANCE='${{ secrets.EVOLUTION_INSTANCE }}' \
+            -e EVOLUTION_KEY='${{ secrets.EVOLUTION_KEY }}' \
+            -e EVOLUTION_SERVER='${{ secrets.EVOLUTION_SERVER }}' \
+            -e MONGOD_PASSWORD='${{ secrets.MONGOD_PASSWORD }}' \
+            -e MONGOD_SERVER='${{ secrets.MONGOD_SERVER }}' \
+            -e POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}' \
+            -e POSTGRES_SERVER='${{ secrets.POSTGRES_SERVER }}' \
+            -e BANCO_POSTGRES='${{ secrets.BANCO_POSTGRES_TEST }}' \
+            -e BANCO='${{ secrets.BANCO_MONGO_TEST }}' \
+            -e MIO_USERNAME='${{ secrets.MIO_USERNAME }}' \
+            -e MIO_PASSWORD='${{ secrets.MIO_PASSWORD }}' \
+            -e MODULO_SAC='f5eac621-7d0f-4783-8ec6-a0b752e38ee1' \
+            -e MODULO_OCORRENCIA_COMPRA='a1c64aea-2e0d-483a-b022-f4225dbaccdf' \
+            -e MODULO_FLASH_COMBUSTIVEL='64c74a18-38f2-4e12-a749-74783669d7d9' \
+            -e MODULO_ADIANTAMENTO_FORNECEDORES='ccfec614-18ce-4706-a8fb-8c7eddc8a7d9' \
+            -e MODULO_RDO='ca838940-f199-4d19-a20d-b22b2ca55c3a' \
+            -e MODULO_RDO_RH='35519c96-c7ff-4799-beeb-327411c33fbb' \
+            -e BASE_URL='http://localhost:3505' \
+            -e ALPAR_KEY='${{ secrets.ALPAR_KEY }}' \
+            -p 3505:3505 \
+            --restart=always \
+            kogni-backend-img
+
+
+  # ------------------------------
+  # JOB 3: Deploy Prod (Windows host)
+  # ------------------------------
+  deploy_prod:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/prod'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy Kogni Backend on Windows
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.WIN_HOST }}
+          username: ${{ secrets.WIN_USERNAME }}
+          password: ${{ secrets.WIN_PASSWORD }}
+          port: ${{ secrets.WIN_PORT }}
+          script: |
+            powershell -NoProfile -NonInteractive -Command "
+              Set-StrictMode -Version Latest
+              $ErrorActionPreference = 'Stop'
+
+              $env:POSTGRES_SERVER    = '${{ secrets.POSTGRES_SERVER }}'
+              $env:POSTGRES_PASSWORD  = '${{ secrets.POSTGRES_PASSWORD }}'
+              $env:MONGOD_SERVER      = '${{ secrets.MONGOD_SERVER }}'
+              $env:MONGOD_PASSWORD    = '${{ secrets.MONGOD_PASSWORD }}'
+              $env:MAIL_EMAIL         = '${{ secrets.MAIL_EMAIL }}'
+              $env:MAIL_PASSWORD      = '${{ secrets.MAIL_PASSWORD }}'
+              $env:EVOLUTION_KEY      = '${{ secrets.EVOLUTION_KEY }}'
+              $env:EVOLUTION_SERVER   = '${{ secrets.EVOLUTION_SERVER }}'
+              $env:EVOLUTION_INSTANCE = '${{ secrets.EVOLUTION_INSTANCE }}'
+              $env:BANCO_POSTGRES     = '${{ secrets.BANCO_POSTGRES_PROD }}'
+              $env:MIO_USERNAME       = '${{ secrets.MIO_USERNAME }}'
+              $env:MIO_PASSWORD       = '${{ secrets.MIO_PASSWORD }}'
+              $env:BANCO              = '${{ secrets.BANCO_MONGO_PROD }}'
+              $env:ALPAR_KEY          = '${{ secrets.ALPAR_KEY }}'
+
+              cd C:\Kogni\backend
+
+              git fetch --all
+              git checkout prod
+              git pull origin prod
+
+              & 'C:\Program Files\Apache\Maven\bin\mvn.cmd' -B -ntp -DskipTests clean package
+
+              $proc = Get-Process java -ErrorAction SilentlyContinue | Where-Object { $_.Path -like '*\java.exe' }
+              if ($proc) { $proc | Stop-Process -Force }
+
+              $jar = Get-ChildItem -Path target -Filter *.jar | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+              if (-not $jar) { throw 'Nenhum JAR encontrado em target\' }
+
+              Start-Process -FilePath 'java' `
+                -ArgumentList ('-jar', ('target\' + $jar.Name)) `
+                -WorkingDirectory 'C:\Kogni\backend' `
+                -NoNewWindow
+            "

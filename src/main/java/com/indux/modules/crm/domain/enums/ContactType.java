@@ -1,0 +1,10 @@
+package com.indux.modules.crm.domain.enums;
+
+public enum ContactType {
+    SOLICITACAO_CADASTRO_EMAIL,
+    SOLICITACAO_CADASTRO_PORTAL,
+    EMAIL_RELACIONAMENTO,
+    TELEFONEMA_RELACIONAMENTO,
+    VISITA_PRESENCIAL,
+    CARTA_IMPRESSA
+}

@@ -1,0 +1,120 @@
+{
+  "table_metadata": {
+    "name": "tb_dependentes",
+    "description": "Tabela de dependentes dos funcionários",
+    "columns": {
+      "cpf": {
+        "type": "VARCHAR",
+        "description": "CPF do dependente",
+        "is_primary_key": true,
+        "column_name": "cpf"
+      },
+      "tipo_plano": {
+        "type": "VARCHAR",
+        "description": "Tipo do plano (Saúde, Odonto, etc)",
+        "is_primary_key": true,
+        "column_name": "tipo_plano"
+      },
+      "matricula_funcionario": {
+        "type": "VARCHAR",
+        "description": "Matrícula do funcionário responsável",
+        "column_name": "matricula_funcionario"
+      },
+      "nome": {
+        "type": "VARCHAR",
+        "description": "Nome do dependente",
+        "column_name": "nome"
+      },
+      "grau_parentesco": {
+        "type": "VARCHAR",
+        "description": "Grau de parentesco com o funcionário",
+        "column_name": "grau_parentesco"
+      },
+      "data_nascimento": {
+        "type": "DATE",
+        "description": "Data de nascimento do dependente",
+        "column_name": "data_nascimento"
+      },
+      "tipo_sexo": {
+        "type": "VARCHAR",
+        "description": "Tipo do sexo do dependente",
+        "column_name": "tipo_sexo"
+      },
+      "funcionario": {
+        "type": "VARCHAR",
+        "description": "Nome do funcionário responsável",
+        "column_name": "funcionario"
+      },
+      "tipo_funcionario": {
+        "type": "VARCHAR",
+        "description": "Tipo do funcionário (CLT, PJ, etc)",
+        "column_name": "tipo_funcionario"
+      },
+      "codigo_plano": {
+        "type": "INTEGER",
+        "description": "Código identificador do plano",
+        "column_name": "codigo_plano"
+      },
+      "plano": {
+        "type": "VARCHAR",
+        "description": "Nome do plano",
+        "column_name": "plano"
+      },
+      "codigo_seguradora": {
+        "type": "INTEGER",
+        "description": "Código identificador da seguradora",
+        "column_name": "codigo_seguradora"
+      },
+      "nome_seguradora": {
+        "type": "VARCHAR",
+        "description": "Nome da seguradora",
+        "column_name": "nome_seguradora"
+      },
+      "mes_inclusao": {
+        "type": "VARCHAR",
+        "description": "Mês de inclusão no plano (formato YYYYMM)",
+        "column_name": "mes_inclusao"
+      },
+      "mes_exclusao": {
+        "type": "VARCHAR",
+        "description": "Mês de exclusão do plano (formato YYYYMM)",
+        "column_name": "mes_exclusao"
+      },
+      "rateio_id": {
+        "type": "INTEGER",
+        "description": "ID do rateio",
+        "column_name": "rateio_id"
+      },
+      "filial_id": {
+        "type": "INTEGER",
+        "description": "ID da filial",
+        "column_name": "filial_id"
+      },
+      "carteirinha": {
+        "type": "VARCHAR",
+        "description": "Número da carteirinha do plano",
+        "column_name": "carteirinha"
+      }
+    }
+  },
+  "example_data": {
+    "cpf": "12345678900",
+    "tipo_plano": "SAUDE",
+    "matricula_funcionario": "EMP123",
+    "nome": "João da Silva",
+    "grau_parentesco": "FILHO",
+    "data_nascimento": "2000-01-01",
+    "tipo_sexo": "M",
+    "funcionario": "Maria da Silva",
+    "tipo_funcionario": "CLT",
+    "codigo_plano": 1,
+    "plano": "Plano Básico",
+    "codigo_seguradora": 100,
+    "nome_seguradora": "Seguradora ABC",
+    "mes_inclusao": "202401",
+    "mes_exclusao": null,
+    "rateio_id": 1,
+    "filial_id": 1,
+    "carteirinha": "123456789"
+  }
+} 

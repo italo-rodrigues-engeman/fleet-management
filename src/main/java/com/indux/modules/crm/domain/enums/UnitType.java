@@ -1,0 +1,21 @@
+package com.indux.modules.crm.domain.enums;
+
+public enum UnitType {
+    MATRIZ,
+    FILIAL,
+    FRANQUIA,
+    HOLDING,
+    FABRICA,
+    BASE_OPERACIONAL,
+    CENTRO_DE_PESQUISA_E_DESENVOLVIMENTO,
+    CANTEIRO_DE_OBRAS,
+    CENTRO_DE_DISTRIBUICAO,
+    ARMAZEM,
+    HUB_LOGISTICO,
+    PONTO_DE_RETIRADA,
+    LOJA_FISICA,
+    SHOWROOM,
+    QUIOSQUE,
+    ESCRITORIO_REGIONAL,
+    OUTROS
+}

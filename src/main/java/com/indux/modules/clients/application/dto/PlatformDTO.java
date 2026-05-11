@@ -1,0 +1,14 @@
+package com.indux.modules.clients.application.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class PlatformDTO {
+    private Long id;
+    private String nomePlataforma;
+    private String sigla;
+} 
